@@ -9,4 +9,4 @@ include_directories(${UHD_INCLUDE_DIRS})
 
 add_executable(uhd main.c)
 
-target_link_libraries(uhd ${UHD_LIBRARIES})
+target_link_libraries(uhd ${UHD_LIBRARIES} -lm)

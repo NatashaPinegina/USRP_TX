@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define EXECUTE_OR_GOTO(label, ...) \
     if(__VA_ARGS__){ \
@@ -20,11 +21,12 @@ void sigint_handler(int code){
 
 int main(int argc, char* argv[]){
     int option = 0;
-    double freq = 2e9;
+    double freq = 1e9;
+    double f0 = 1e5;
     double rate = 1e6;
     double gain = 0;
     char* device_args = NULL;
-    size_t channel = 0;
+    size_t channel = 1;
     uint64_t total_num_samps = 0;
     bool verbose = false;
     int return_code = EXIT_SUCCESS;
@@ -120,9 +122,12 @@ int main(int argc, char* argv[]){
     buff = calloc(sizeof(float), samps_per_buff * 2);
     buffs_ptr = (const void**)&buff;
     size_t i = 0;
+    double samp_per = 1./rate;
+    double time = 0;
     for(i = 0; i < (samps_per_buff*2); i+=2){
-        buff[i]   = 0.1f;
-        buff[i+1] = 0;
+        buff[i] = cos(2*M_PI*f0*time);
+        buff[i+1] = sin(2*M_PI*f0*time);
+        time+=samp_per;
     }
 
     /** Обработка завершения.*/
