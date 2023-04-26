@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <uhd.h>
-#include "getopt.h"
 #include <signal.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -35,24 +34,23 @@ int main(int argc, char* argv[]){
         device_args = strdup("");
 
     /** Создать дескриптор USRP*/
-    uhd_usrp_handle usrp;
+    uhd_usrp_handle usrp; /** Интерфейс C-уровня для работы с устройством USRP.*/
     EXECUTE_OR_GOTO(free_option_strings,
                     uhd_usrp_make(&usrp, device_args)
     )
 
-    // Create TX streamer
-    uhd_tx_streamer_handle tx_streamer;
+    /** Создать дескриптор стримера TX.*/
+    uhd_tx_streamer_handle tx_streamer; /** Интерфейс C-уровня для работы с TX-стримером.*/
     EXECUTE_OR_GOTO(free_usrp,
                     uhd_tx_streamer_make(&tx_streamer)
     )
 
-    // Create TX metadata
-    uhd_tx_metadata_handle md;
+    /** Создать новый дескриптор метаданных TX.*/
+    uhd_tx_metadata_handle md; /** Интерфейс метаданных TX для описания полученных данных IF.*/
     EXECUTE_OR_GOTO(free_tx_streamer,
                     uhd_tx_metadata_make(&md, false, 0, 0.1, true, false)
     )
 
-    // Create other necessary structs
     uhd_tune_request_t tune_request = {
             .target_freq = freq,
             .rf_freq_policy = UHD_TUNE_REQUEST_POLICY_AUTO,
@@ -72,49 +70,49 @@ int main(int argc, char* argv[]){
     float* buff = NULL;
     const void** buffs_ptr = NULL;
 
-    // Set rate
+    /** Установить частоту дискретизации данного канала TX (в Sps)*/
     fprintf(stderr, "Setting TX Rate: %f...\n", rate);
     EXECUTE_OR_GOTO(free_tx_metadata,
                     uhd_usrp_set_tx_rate(usrp, rate, channel)
     )
 
-    // See what rate actually is
+    /** Получить частоту дискретизации данного канала TX (в Sps)*/
     EXECUTE_OR_GOTO(free_tx_metadata,
                     uhd_usrp_get_tx_rate(usrp, channel, &rate)
     )
     fprintf(stderr, "Actual TX Rate: %f...\n\n", rate);
 
-    // Set gain
+    /** Установите усиление TX для данного канала и имени.*/
     fprintf(stderr, "Setting TX Gain: %f db...\n", gain);
     EXECUTE_OR_GOTO(free_tx_metadata,
                     uhd_usrp_set_tx_gain(usrp, gain, 0, "")
     )
 
-    // See what gain actually is
+    /** Получите усиление TX данного канала.*/
     EXECUTE_OR_GOTO(free_tx_metadata,
                     uhd_usrp_get_tx_gain(usrp, channel, "", &gain)
     )
     fprintf(stderr, "Actual TX Gain: %f...\n", gain);
 
-    // Set frequency
+    /** Установить центральную частоту передачи данного канала.*/
     fprintf(stderr, "Setting TX frequency: %f MHz...\n", freq / 1e6);
     EXECUTE_OR_GOTO(free_tx_metadata,
                     uhd_usrp_set_tx_freq(usrp, &tune_request, channel, &tune_result)
     )
 
-    // See what frequency actually is
+    /** Получить центральную частоту TX данного канала.*/
     EXECUTE_OR_GOTO(free_tx_metadata,
                     uhd_usrp_get_tx_freq(usrp, channel, &freq)
     )
     fprintf(stderr, "Actual TX frequency: %f MHz...\n", freq / 1e6);
 
-    // Set up streamer
+    /** Создать стример TX из дескриптора USRP и заданных аргументов потока.*/
     stream_args.channel_list = &channel;
     EXECUTE_OR_GOTO(free_tx_streamer,
                     uhd_usrp_get_tx_stream(usrp, &stream_args, tx_streamer)
     )
 
-    // Set up buffer
+    /** Получите максимальное количество выборок в буфере на пакет.*/
     EXECUTE_OR_GOTO(free_tx_streamer,
                     uhd_tx_streamer_max_num_samps(tx_streamer, &samps_per_buff)
     )
@@ -127,11 +125,10 @@ int main(int argc, char* argv[]){
         buff[i+1] = 0;
     }
 
-    // Ctrl+C will exit loop
+    /** Обработка завершения.*/
     signal(SIGINT, &sigint_handler);
     fprintf(stderr, "Press Ctrl+C to stop streaming...\n");
 
-    // Actual streaming
     uint64_t num_acc_samps = 0;
     size_t num_samps_sent = 0;
 
