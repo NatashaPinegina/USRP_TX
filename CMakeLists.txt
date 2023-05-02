@@ -7,6 +7,6 @@ find_package(UHD "3.7.1" REQUIRED)
 
 include_directories(${UHD_INCLUDE_DIRS})
 
-add_executable(uhd main.c)
+add_executable(uhd main.c GenerateSignal.h)
 
 target_link_libraries(uhd ${UHD_LIBRARIES} -lm)

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "GenerateSignal.h"
 
 #define EXECUTE_OR_GOTO(label, ...) \
     if(__VA_ARGS__){ \
@@ -21,12 +22,14 @@ void sigint_handler(int code){
 
 int main(int argc, char* argv[]){
     int option = 0;
+    double dur = 0.001;
+    double bitrate = 4800;
     double freq = 1e9;
-    double f0 = 1e5;
+    double f0 = 3e5;
     double rate = 1e6;
     double gain = 0;
     char* device_args = NULL;
-    size_t channel = 1;
+    size_t channel = 0;
     uint64_t total_num_samps = 0;
     bool verbose = false;
     int return_code = EXIT_SUCCESS;
@@ -119,16 +122,22 @@ int main(int argc, char* argv[]){
                     uhd_tx_streamer_max_num_samps(tx_streamer, &samps_per_buff)
     )
     fprintf(stderr, "Buffer size in samples: %zu\n", samps_per_buff);
-    buff = calloc(sizeof(float), samps_per_buff * 2);
+
+    struct SignalGenerationParams param = {dur, f0, rate, bitrate, samps_per_buff};
+    enum SignalType type = BPSK;
+    struct Signal ret_signal;
+    buff = generateSignal(type, param, ret_signal);
     buffs_ptr = (const void**)&buff;
-    size_t i = 0;
-    double samp_per = 1./rate;
-    double time = 0;
-    for(i = 0; i < (samps_per_buff*2); i+=2){
-        buff[i] = cos(2*M_PI*f0*time);
-        buff[i+1] = sin(2*M_PI*f0*time);
-        time+=samp_per;
-    }
+    //buff = calloc(sizeof(float), samps_per_buff * 2);
+    //buffs_ptr = (const void**)&buff;
+    //size_t i = 0;
+    //double samp_per = 1./rate;
+   // double time = 0;
+    //for(i = 0; i < (samps_per_buff*2); i+=2){
+     //   buff[i] = cos(2*M_PI*f0*time);
+     //   buff[i+1] = sin(2*M_PI*f0*time);
+     //   time+=samp_per;
+    //}
 
     /** Обработка завершения.*/
     signal(SIGINT, &sigint_handler);
