@@ -23,17 +23,19 @@ void sigint_handler(int code){
 int main(int argc, char* argv[]){
     int option = 0;
     double dur = 0.001;
-    double bitrate = 4800;
-    double freq = 1e9;
-    double f0 = 3e5;
-    double rate = 1e6;
-    double gain = 0;
+    double bitrate = 1;
+    double freq = 400000000;
+    double f0 = 4000000;
+    double rate = 10000000;
+    double gain = 10;
     char* device_args = NULL;
     size_t channel = 0;
     uint64_t total_num_samps = 0;
     bool verbose = false;
     int return_code = EXIT_SUCCESS;
     char error_string[512];
+
+
 
     if (!device_args)
         device_args = strdup("");
@@ -127,6 +129,7 @@ int main(int argc, char* argv[]){
     enum SignalType type = BPSK;
     struct Signal ret_signal;
     buff = generateSignal(type, param, ret_signal);
+
     buffs_ptr = (const void**)&buff;
     //buff = calloc(sizeof(float), samps_per_buff * 2);
     //buffs_ptr = (const void**)&buff;
@@ -151,7 +154,7 @@ int main(int argc, char* argv[]){
         if (total_num_samps > 0 && num_acc_samps >= total_num_samps) break;
 
         EXECUTE_OR_GOTO(free_buff,
-                        uhd_tx_streamer_send(tx_streamer, buffs_ptr, samps_per_buff, &md, 0.1, &num_samps_sent)
+                        uhd_tx_streamer_send(tx_streamer, buffs_ptr, samps_per_buff, &md, 0.01, &num_samps_sent)
         )
 
         num_acc_samps += num_samps_sent;

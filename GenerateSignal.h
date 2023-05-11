@@ -48,7 +48,7 @@ double* GenerateBPSKSignal(struct SignalGenerationParams param, struct Signal re
     //int kol_otsh = ret_signal->duration * ret_signal->samplingFreq;
     int kol_otsh = 2 * param.maxSize;
     ret_signal.signal = (double*)malloc(kol_otsh * sizeof(double));
-    ret_signal.keysTime = (double*)malloc(kol_otsh / 2 * sizeof(double));
+    ret_signal.keysTime = (double*)malloc(kol_otsh * sizeof(double));
 
     int samples_in_bit = (int)(param.samplingFreq/param.bitrate);
     double sampling_period = 1./param.samplingFreq;
@@ -67,11 +67,14 @@ double* GenerateBPSKSignal(struct SignalGenerationParams param, struct Signal re
                 else phase = M_PI;
                 ret_signal.signal[ind] = cos(2 * M_PI * ret_signal.f0 * dbl_ind + phase);
                 ret_signal.signal[ind+1] = sin(2 * M_PI * ret_signal.f0 * dbl_ind + phase);
-                ret_signal.keysTime[ind++] = dbl_ind;
+                ret_signal.keysTime[ind] = dbl_ind;
+                ret_signal.keysTime[ind+1] = dbl_ind;
+                ind+=2;
                 dbl_ind += sampling_period;
             }
         }
     }
+
     return ret_signal.signal;
 }
 
