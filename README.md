@@ -10,7 +10,7 @@ https://files.ettus.com/manual/page_build_guide.html
 https://stackoverflow.com/questions/33304828/when-trying-to-use-my-usrp-in-gnu-radio-i-get-a-no-devices-found-for
 #### Сборка кода
 ```
-git clone 
+git clone https://github.com/NatashaPinegina/USRP_TX.git
 cd USRP_TX
 mkdir build
 cd build
